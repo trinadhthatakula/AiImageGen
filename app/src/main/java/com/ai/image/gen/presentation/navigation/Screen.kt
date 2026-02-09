@@ -21,6 +21,7 @@ sealed class Screen(val route: String, val title: String? = null, val icon: Imag
     // Leaf Screens (Features)
     data object TextToImage : Screen("t2i")
     data object ImageEdit : Screen("image_edit")
+    data object Queue : Screen("queue")
 
     data object EditResult : Screen("edit_result/{encodedPath}") {
         fun createRoute(filePath: String): String {

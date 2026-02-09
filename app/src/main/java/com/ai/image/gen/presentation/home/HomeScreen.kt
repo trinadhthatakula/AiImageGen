@@ -16,26 +16,72 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Brush
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ai.image.gen.presentation.queue.QueueViewModel
+import org.koin.androidx.compose.koinViewModel
+import java.lang.Thread.activeCount
 
 @Composable
 fun HomeScreen(
     onNavigateToT2I: () -> Unit,
-    onNavigateToEdit: () -> Unit
+    onNavigateToEdit: () -> Unit,
+    onNavigateToQueue: () -> Unit,
+    queueViewModel: QueueViewModel = koinViewModel()
 ) {
+    val activeCount by queueViewModel.activeCount.collectAsStateWithLifecycle()
+
     Scaffold(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = "AI Image Studio",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                subtitle = {
+                    Text(
+                        text = "Create. Edit. Reimagine.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                actions = {
+                    // Queue Entry Point
+                    IconButton(onClick = onNavigateToQueue) {
+                        BadgedBox(
+                            badge = {
+                                if (activeCount > 0) {
+                                    Badge { Text("$activeCount") }
+                                }
+                            }
+                        ) {
+                            Icon(Icons.Default.Download, contentDescription = "Queue")
+                        }
+                    }
+                }
+            )
+        }
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
@@ -44,21 +90,6 @@ fun HomeScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Header
-            item {
-                Column {
-                    Text(
-                        text = "AI Image Studio",
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Create. Edit. Reimagine.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
 
             // Action Grid
             item {

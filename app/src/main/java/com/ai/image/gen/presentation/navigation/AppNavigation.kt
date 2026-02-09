@@ -22,6 +22,7 @@ import com.ai.image.gen.data.worker.ImageEditWorker
 import com.ai.image.gen.presentation.home.HomeScreen
 import com.ai.image.gen.presentation.i2i.EditResultScreen
 import com.ai.image.gen.presentation.i2i.ImageEditScreen
+import com.ai.image.gen.presentation.queue.QueueScreen
 import com.ai.image.gen.presentation.saved.SavedImagesScreen
 import com.ai.image.gen.presentation.t2i.TextToImageScreen
 import java.net.URLDecoder
@@ -118,7 +119,8 @@ fun AppNavigation() {
             composable(Screen.Home.route) {
                 HomeScreen(
                     onNavigateToT2I = { navController.navigate(Screen.TextToImage.route) },
-                    onNavigateToEdit = { navController.navigate(Screen.ImageEdit.route) }
+                    onNavigateToEdit = { navController.navigate(Screen.ImageEdit.route) },
+                    onNavigateToQueue = {}
                 )
             }
 
@@ -144,6 +146,15 @@ fun AppNavigation() {
                     onNavigateHome = {
                         // Pop back to home after queuing
                         navController.popBackStack()
+                    }
+                )
+            }
+
+            composable(Screen.Queue.route) {
+                QueueScreen(
+                    onBackClick = { navController.popBackStack() },
+                    onResultClick = { filePath ->
+                        navController.navigate(Screen.EditResult.createRoute(filePath))
                     }
                 )
             }
