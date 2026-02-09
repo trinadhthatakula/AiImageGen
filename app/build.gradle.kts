@@ -1,15 +1,37 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.room)
+    alias(libs.plugins.ksp)
 }
 
-val secretsPropertiesFile: File = rootProject.file("secrets.properties")
-val secretsProperties = Properties()
-if (secretsPropertiesFile.exists()) {
-    secretsProperties.load(FileInputStream(secretsPropertiesFile))
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+        optIn.add("kotlin.RequiresOptIn")
+        optIn.add("kotlin.time.ExperimentalTime")
+        optIn.add("androidx.compose.material3.ExperimentalMaterial3ExpressiveApi")
+        optIn.add("androidx.compose.material3.ExperimentalMaterial3Api")
+    }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
+}
+
+private fun fetchHfToken(): String? {
+    val secretsFile = rootProject.file("secrets.properties")
+    if (secretsFile.exists()) {
+        val properties = Properties()
+        properties.load(FileInputStream(secretsFile))
+        return properties.getProperty("HF_TOKEN","")
+    }
+    return ""
 }
 
 android {
@@ -28,7 +50,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        val token = secretsProperties.getProperty("HF_TOKEN")
+        val token = fetchHfToken()
         if (token.isNullOrEmpty()) {
             logger.error(
                 "\n" +
@@ -104,12 +126,23 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
 
-    implementation(libs.koin.androidx.workmanager)
+    /// Room DB
+    implementation(libs.bundles.room)
+    ksp(libs.room.compiler)
 
+    /// Kotlin
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.datetime)
+
+    /// Koin
+    implementation(libs.koin.androidx.workmanager)
     implementation(libs.koin.androidx.compose)
+
+    /// Coil for image loading
+    implementation(libs.bundles.coil)
+
     implementation(libs.retrofit)
     implementation(libs.converter.gson) // For JSON request body
-    implementation(libs.coil.compose)
     implementation(libs.logging.interceptor)
 
 }
