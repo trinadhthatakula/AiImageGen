@@ -1,6 +1,15 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+}
+
+val secretsPropertiesFile: File = rootProject.file("secrets.properties")
+val secretsProperties = Properties()
+if (secretsPropertiesFile.exists()) {
+    secretsProperties.load(FileInputStream(secretsPropertiesFile))
 }
 
 android {
@@ -19,6 +28,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        val hfToken = secretsProperties.getProperty("HF_TOKEN") ?: ""
+        buildConfigField("String", "HF_TOKEN", "\"$hfToken\"")
     }
 
     buildTypes {
@@ -31,11 +42,12 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -55,4 +67,10 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    implementation(libs.koin.androidx.compose)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson) // For JSON request body
+    implementation(libs.coil.compose)
+
 }
