@@ -12,6 +12,7 @@ import com.ai.image.gen.domain.GenerateImageUseCase
 import com.ai.image.gen.domain.ImageRepository
 import com.ai.image.gen.domain.SavedImagesRepository
 import com.ai.image.gen.presentation.i2i.ImageEditViewModel
+import com.ai.image.gen.presentation.queue.QueueViewModel
 import com.ai.image.gen.presentation.saved.SavedImagesViewModel
 import com.ai.image.gen.presentation.t2i.ImageViewModel
 import okhttp3.OkHttpClient
@@ -86,4 +87,5 @@ val appModule = module {
     viewModelOf(::ImageViewModel)
     viewModelOf(::ImageEditViewModel)
     viewModelOf(::SavedImagesViewModel)
+    viewModelOf(::QueueViewModel)
 }
