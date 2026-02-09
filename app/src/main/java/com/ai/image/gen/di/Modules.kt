@@ -1,10 +1,12 @@
 package com.ai.image.gen.di
 
+import androidx.room.Room
 import androidx.work.WorkManager
 import com.ai.image.gen.BuildConfig
 import com.ai.image.gen.data.HuggingFaceApi
 import com.ai.image.gen.data.ImageRepositoryImpl
 import com.ai.image.gen.data.SavedImagesRepositoryImpl
+import com.ai.image.gen.data.local.AppDatabase
 import com.ai.image.gen.data.worker.ImageEditWorker
 import com.ai.image.gen.domain.GenerateImageUseCase
 import com.ai.image.gen.domain.ImageRepository
@@ -57,6 +59,18 @@ val appModule = module {
 
     single { WorkManager.getInstance(androidContext()) }
 
+    single {
+        Room.databaseBuilder(
+            androidContext(),
+            AppDatabase::class.java,
+            "ai_image_studio_db"
+        )
+            .fallbackToDestructiveMigration(true) // For demo purposes, wipe DB if schema changes
+            .build()
+    }
+
+    // 2. DAO (Scoped to Database)
+    single { get<AppDatabase>().requestDao() }
 
     // 2. Repository (Singleton)
     // using singleOf(::Impl) { bind<Interface>() } for strict typing

@@ -1,82 +1,129 @@
 package com.ai.image.gen.data
 
+import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
+import com.ai.image.gen.BuildConfig
+import com.ai.image.gen.data.local.RequestDao
+import com.ai.image.gen.data.local.entity.GenerationRequestEntity
+import com.ai.image.gen.data.local.entity.RequestStatus
+import com.ai.image.gen.data.local.entity.RequestType
+import com.ai.image.gen.data.worker.ImageEditWorker
 import com.ai.image.gen.domain.ImageGenerationResult
 import com.ai.image.gen.domain.ImageRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import org.json.JSONObject
-import java.io.IOException
-import com.ai.image.gen.BuildConfig
-import com.ai.image.gen.data.worker.ImageEditWorker
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.UUID
+import kotlin.time.Clock
 
 class ImageRepositoryImpl(
+    private val context: Context,
     private val api: HuggingFaceApi,
-    private val workManager: WorkManager
+    private val workManager: WorkManager,
+    private val dao: RequestDao // Inject DAO
 ) : ImageRepository {
 
     override fun generateImage(prompt: String): Flow<ImageGenerationResult> = flow {
         emit(ImageGenerationResult.Loading)
 
+        // 1. Create Request ID & Entity
+        val requestId = UUID.randomUUID().toString()
+        val requestEntity = GenerationRequestEntity(
+            id = requestId,
+            prompt = prompt,
+            type = RequestType.TEXT_TO_IMAGE,
+            status = RequestStatus.RUNNING, // T2I starts immediately
+            createdAt = Clock.System.now()
+        )
+
         try {
-            // 1. Prepare the raw JSON body manually to avoid complex DTOs for a single string
+            // 2. Insert into DB
+            dao.insertRequest(requestEntity)
+
             val jsonBody = JSONObject().put("inputs", prompt).toString()
             val requestBody = jsonBody.toRequestBody("application/json".toMediaTypeOrNull())
 
-            // 2. Make the call using the Token from BuildConfig
             val responseBody = api.generateImage(
                 token = "Bearer ${BuildConfig.HF_TOKEN}",
                 inputs = requestBody
             )
 
-            // 3. Convert Bytes to Bitmap
             val bytes = responseBody.bytes()
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
 
             if (bitmap != null) {
+                // 3. Save to Disk (Required for History Tab)
+                val savedPath = saveT2IToStorage(bitmap)
+
+                // 4. Update DB Success
+                dao.markSuccess(requestId, savedPath)
                 emit(ImageGenerationResult.Success(bitmap))
             } else {
-                // Sometimes the API returns a JSON error (like 503) but Retrofit treats it as "Success"
-                // if the code is 200-299. If decoding fails, it might be text data.
-                val errorResponse = String(bytes)
-                emit(ImageGenerationResult.Error("Failed to decode image. Response: $errorResponse"))
+                val errorMsg = String(bytes)
+                dao.markFailed(requestId, errorMsg)
+                emit(ImageGenerationResult.Error("Failed to decode image. $errorMsg"))
             }
 
         } catch (e: Exception) {
-            // Handle HTTP errors (401, 503, etc.)
             val errorMessage = when (e) {
-                is IOException -> "Network Error: Check your internet connection."
-                is retrofit2.HttpException -> {
-                    when (e.code()) {
-                        503 -> "Model is loading (Cold Start). Please try again in a moment."
-                        401 -> "Unauthorized. Check your HF_TOKEN."
-                        else -> "Server Error: ${e.code()}"
-                    }
-                }
+                is IOException -> "Network Error"
+                is retrofit2.HttpException -> "Server Error: ${e.code()}"
                 else -> e.localizedMessage ?: "Unknown Error"
             }
+            // 5. Update DB Failure
+            dao.markFailed(requestId, errorMessage)
             emit(ImageGenerationResult.Error(errorMessage, e))
         }
-    }.flowOn(Dispatchers.IO) // ALWAYS ensure this runs on IO thread
+    }.flowOn(Dispatchers.IO)
 
     override fun scheduleImageEdit(prompt: String, imageUri: String) {
-        val inputData = workDataOf(
-            ImageEditWorker.KEY_PROMPT to prompt,
-            ImageEditWorker.KEY_IMAGE_URI to imageUri
+        // 1. Create Request ID
+        val requestId = UUID.randomUUID().toString()
+
+        // 2. Create Entity
+        val requestEntity = GenerationRequestEntity(
+            id = requestId,
+            prompt = prompt,
+            type = RequestType.IMAGE_TO_IMAGE,
+            status = RequestStatus.QUEUED,
+            createdAt = Clock.System.now()
         )
 
-        val editWorkRequest = OneTimeWorkRequestBuilder<ImageEditWorker>()
-            .setInputData(inputData)
-            // Optional: Add constraints (e.g., Network Required)
-            .build()
+        kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+            dao.insertRequest(requestEntity)
 
-        workManager.enqueue(editWorkRequest)
+            val inputData = workDataOf(
+                ImageEditWorker.KEY_REQUEST_ID to requestId, // Pass ID
+                ImageEditWorker.KEY_PROMPT to prompt,
+                ImageEditWorker.KEY_IMAGE_URI to imageUri
+            )
+
+            val editWorkRequest = OneTimeWorkRequestBuilder<ImageEditWorker>()
+                .setInputData(inputData)
+                .build()
+
+            workManager.enqueue(editWorkRequest)
+        }
+    }
+
+    private fun saveT2IToStorage(bitmap: Bitmap): String {
+        val filename = "generated_${System.currentTimeMillis()}.jpg"
+        val file = File(context.filesDir, filename)
+        FileOutputStream(file).use { out ->
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
+        }
+        return file.absolutePath
     }
 }

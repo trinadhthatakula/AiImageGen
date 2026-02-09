@@ -1,6 +1,7 @@
 package com.ai.image.gen.domain
 
 import kotlinx.coroutines.flow.Flow
+import java.io.File
 
 interface ImageRepository {
     /**
