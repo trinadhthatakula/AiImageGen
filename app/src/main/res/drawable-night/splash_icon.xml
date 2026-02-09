@@ -8,18 +8,20 @@
             android:viewportWidth="108"
             android:viewportHeight="108">
 
-            <!-- GROUP A: Dark Slate for Light Mode -->
+            <!-- GROUP A: The Capital A -->
             <group android:name="group_a">
                 <path
-                    android:fillColor="#0F172A"
+                    android:fillColor="#FBBF24"
                     android:pathData="M27,74 L47,24 L67,74 H57 L52,60 H42 L37,74 H27 Z M47,38 L50,52 H44 Z" />
             </group>
 
-            <!-- GROUP I: Dark Slate Body + Blue Dot -->
+            <!-- GROUP I: The Small i (Body + Dot) -->
             <group android:name="group_i">
+                <!-- Body -->
                 <path
-                    android:fillColor="#0F172A"
+                    android:fillColor="#FBBF24"
                     android:pathData="M73,45 H81 V74 H73 Z" />
+                <!-- Dot (Blue) -->
                 <path
                     android:fillColor="#38BDF8"
                     android:pathData="M77,34 m-5,0 a5,5 0 1,1 10,0 a5,5 0 1,1 -10,0" />
@@ -27,7 +29,7 @@
         </vector>
     </aapt:attr>
 
-    <!-- Same Animation Logic -->
+    <!-- ANIMATION 1: Slide 'A' from Center (12) to Left (0) -->
     <target android:name="group_a">
         <aapt:attr name="android:animation">
             <objectAnimator
@@ -39,6 +41,7 @@
         </aapt:attr>
     </target>
 
+    <!-- ANIMATION 2: Fade 'i' In -->
     <target android:name="group_i">
         <aapt:attr name="android:animation">
             <objectAnimator
