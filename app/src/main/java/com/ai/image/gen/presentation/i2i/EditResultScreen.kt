@@ -83,8 +83,7 @@ fun EditResultScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
+                .padding(padding),
             contentAlignment = Alignment.Center
         ) {
             if (file.exists()) {

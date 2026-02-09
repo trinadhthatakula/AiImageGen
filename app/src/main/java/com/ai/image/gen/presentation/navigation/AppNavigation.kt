@@ -1,14 +1,12 @@
 package com.ai.image.gen.presentation.navigation
 
 import android.app.Activity
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -73,12 +71,13 @@ fun AppNavigation() {
                     }
                 }
             }
-        }
+        },
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             // 1. Home Tab
             composable(Screen.Home.route) {
@@ -88,7 +87,7 @@ fun AppNavigation() {
                 )
             }
 
-            // 2. Saved Tab (Placeholder)
+            // 2. Saved Tab
             composable(Screen.Saved.route) {
                 SavedImagesScreen(
                     onImageClick = { filePath ->
