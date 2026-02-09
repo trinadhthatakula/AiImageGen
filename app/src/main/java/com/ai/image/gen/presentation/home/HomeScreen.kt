@@ -48,7 +48,7 @@ fun HomeScreen(
             item {
                 Column {
                     Text(
-                        text = "AI Image Gen Studio",
+                        text = "AI Image Studio",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold
                     )

@@ -1,12 +1,16 @@
 package com.ai.image.gen.presentation.navigation
 
 import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -48,6 +52,37 @@ fun AppNavigation() {
                 navController.navigate(Screen.EditResult.createRoute(path))
             }
         }
+    }
+
+    // --- EXIT CONFIRMATION LOGIC ---
+    var showExitDialog by remember { mutableStateOf(false) }
+
+    // Intercept back press ONLY when on the Home screen
+    BackHandler(enabled = currentDestination?.route == Screen.Home.route) {
+        showExitDialog = true
+    }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            title = { Text("Leave Ai Image Studio?") },
+            text = { Text("Are you sure you want to close the application?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showExitDialog = false
+                        activity?.finish()
+                    }
+                ) {
+                    Text("Exit", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) {
+                    Text("Stay")
+                }
+            }
+        )
     }
 
     Scaffold(
