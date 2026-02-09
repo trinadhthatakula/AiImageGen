@@ -72,5 +72,6 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson) // For JSON request body
     implementation(libs.coil.compose)
+    implementation(libs.logging.interceptor)
 
 }
