@@ -120,7 +120,9 @@ fun AppNavigation() {
                 HomeScreen(
                     onNavigateToT2I = { navController.navigate(Screen.TextToImage.route) },
                     onNavigateToEdit = { navController.navigate(Screen.ImageEdit.route) },
-                    onNavigateToQueue = {}
+                    onNavigateToQueue = {
+                        navController.navigate(Screen.Queue.route)
+                    }
                 )
             }
 
