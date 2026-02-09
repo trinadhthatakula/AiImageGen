@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <!-- Set the background to Valhalla Dark Slate -->
+        <item name="windowSplashScreenBackground">#0F172A</item>
 
+        <!-- Use our Gold/Blue Icon -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+
+        <!-- Keep the icon size standard -->
+        <!-- Duration is required even if static, keeps it on screen long enough -->
+        <item name="windowSplashScreenAnimationDuration">500</item>
+
+        <!-- IMPORTANT: Where to go after splash is done -->
+        <item name="postSplashScreenTheme">@style/Theme.AIImageGen</item>
+    </style>
     <style name="Theme.AIImageGen" parent="android:Theme.Material.Light.NoActionBar" />
 </resources>
