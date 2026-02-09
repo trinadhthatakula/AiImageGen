@@ -3,272 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Valhalla Demo: HF Android Inference</title>
+    <title>Valhalla Demo: Hugging Face Android Inference</title>
     <style>
         :root {
             --bg-primary: #0f172a;
             --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
             --accent-gold: #fbbf24;
             --accent-blue: #38bdf8;
-            --success: #4ade80;
-            --danger: #f87171;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --code-bg: #000000;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             background-color: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
             padding: 2rem;
         }
 
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
-        }
+        .container { max-width: 900px; margin: 0 auto; }
 
-        /* Hero Section */
-        header {
-            text-align: center;
-            padding: 4rem 0;
-            border-bottom: 1px solid var(--bg-secondary);
-        }
-
+        /* Headers */
         h1 {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 1rem;
-            background: linear-gradient(to right, var(--text-primary), var(--accent-gold));
+            background: linear-gradient(to right, #fff, var(--accent-gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Tech Stack Grid */
-        .section-title {
+        h2 {
             font-size: 1.8rem;
-            margin: 3rem 0 1.5rem;
-            color: var(--accent-gold);
-            border-left: 4px solid var(--accent-gold);
-            padding-left: 1rem;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .card {
-            background-color: var(--bg-secondary);
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: transform 0.2s;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            border-color: var(--accent-blue);
-        }
-
-        .card h3 {
-            margin-bottom: 0.5rem;
+            margin-top: 3rem;
+            margin-bottom: 1.5rem;
             color: var(--accent-blue);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
         }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        p, li { color: var(--text-secondary); margin-bottom: 1rem; }
+
+        /* Badges */
+        .badges { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .b-android { background: #3DDC84; color: #000; }
+        .b-kotlin { background: #7F52FF; color: #fff; }
+        .b-compose { background: #4285F4; color: #fff; }
+        .b-koin { background: #FF5252; color: #fff; }
+
+        /* Code Blocks */
+        pre {
+            background: var(--code-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+        code { font-family: 'Fira Code', monospace; color: var(--accent-gold); }
+        p code, li code { background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; color: var(--accent-gold); }
 
         /* Architecture Diagram */
-        .arch-diagram {
+        .diagram-container {
             display: flex;
             flex-direction: column;
+            align-items: center;
             gap: 1rem;
             background: rgba(0,0,0,0.2);
             padding: 2rem;
-            border-radius: 16px;
-            align-items: center;
+            border-radius: 12px;
+            margin: 2rem 0;
         }
-
-        .layer {
-            width: 80%;
-            padding: 1.5rem;
+        .node {
             background: var(--bg-secondary);
+            border: 1px solid var(--accent-blue);
+            padding: 1rem 2rem;
             border-radius: 8px;
             text-align: center;
+            width: 80%;
             position: relative;
-            border-left: 4px solid var(--text-secondary);
         }
+        .node strong { display: block; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .node small { font-size: 0.85rem; color: var(--text-secondary); }
+        .arrow { color: var(--text-secondary); font-size: 1.5rem; }
 
-        .layer.presentation { border-color: var(--accent-blue); }
-        .layer.domain { border-color: var(--accent-gold); }
-        .layer.data { border-color: var(--success); }
+        /* Lists */
+        ul, ol { margin-left: 1.5rem; margin-bottom: 1.5rem; }
 
-        .arrow {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
+        /* Alerts */
+        .alert {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 4px solid var(--accent-gold);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 8px 8px 0;
         }
-
-        /* Code & Logic */
-        .feature-block {
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        code {
-            background: #000;
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-family: 'Fira Code', monospace;
-            color: var(--accent-gold);
-            font-size: 0.9em;
-        }
-
-        ul {
-            list-style-position: inside;
-            margin-left: 1rem;
-        }
-
-        li {
-            margin-bottom: 0.5rem;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            margin-right: 0.5rem;
-        }
-
-        .badge-arch { background: rgba(56, 189, 248, 0.2); color: var(--accent-blue); }
-        .badge-net { background: rgba(251, 191, 36, 0.2); color: var(--accent-gold); }
 
         footer {
             margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
             text-align: center;
-            color: var(--text-secondary);
             font-size: 0.9rem;
-            padding-bottom: 2rem;
         }
+
+        a { color: var(--accent-blue); text-decoration: none; }
+        a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header>
-        <h1>AI Image Gen</h1>
-        <p class="subtitle">
-            A production-grade Android implementation of Hugging Face Inference using Clean
-            Architecture and Modern Android Development (MAD) practices.
-        </p>
+        <h1>Valhalla Demo: Hugging Face Android Inference</h1>
+        <div class="badges">
+            <span class="badge b-android">Android</span>
+            <span class="badge b-kotlin">Kotlin</span>
+            <span class="badge b-compose">Jetpack Compose</span>
+            <span class="badge b-koin">Koin</span>
+        </div>
+        <p>A production-grade Android implementation of Hugging Face Inference APIs, built with <strong>Clean Architecture</strong> and <strong>Modern Android Development (MAD)</strong> practices.</p>
+        <p>This project demonstrates how to handle serverless GPU inference ("Cold Starts"), strictly typed state management, and secure API key handling in a professional Android environment.</p>
     </header>
 
-    <h2 class="section-title">🛠 The Tech Stack</h2>
-    <div class="grid">
-        <div class="card">
-            <h3>Kotlin & Coroutines</h3>
-            <p>100% Kotlin codebase using Coroutines for asynchronous image generation and Flow for
-                reactive state updates.</p>
-        </div>
-        <div class="card">
-            <h3>Jetpack Compose</h3>
-            <p>Modern, declarative UI toolkit. Uses <code>AnimatedContent</code> for smooth state
-                transitions between Loading, Success, and Error.</p>
-        </div>
-        <div class="card">
-            <h3>Koin (DI)</h3>
-            <p>Lightweight dependency injection. Uses the latest DSL (<code>module {
-                singleOf(::Impl) }</code>) for cleaner module definitions.</p>
-        </div>
-        <div class="card">
-            <h3>Retrofit & OkHttp</h3>
-            <p>Industry-standard networking. Configured with extended timeouts (30s) to handle
-                long-running GPU inference tasks.</p>
-        </div>
-    </div>
+    <section>
+        <h2>🛠 The Tech Stack</h2>
+        <ul>
+            <li><strong>Language:</strong> 100% Kotlin</li>
+            <li><strong>UI:</strong> Jetpack Compose (Material3) + <code>AnimatedContent</code> for state transitions.</li>
+            <li><strong>Async:</strong> Coroutines + Flow.</li>
+            <li><strong>Dependency Injection:</strong> Koin (using the latest <code>module { singleOf(::Impl) }</code> DSL).</li>
+            <li><strong>Networking:</strong> Retrofit + OkHttp (Custom 30s timeouts for GPU latency).</li>
+            <li><strong>Architecture:</strong> MVVM + Clean Architecture (Presentation, Domain, Data).</li>
+        </ul>
+    </section>
 
-    <h2 class="section-title">🏛 Clean Architecture</h2>
-    <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">
-        The app follows a strict separation of concerns, ensuring business logic is decoupled from
-        the Android framework.
-    </p>
+    <section>
+        <h2>🏛 Architecture</h2>
+        <p>The app follows a strict separation of concerns:</p>
 
-    <div class="arch-diagram">
-        <div class="layer presentation">
-            <h3>Presentation Layer</h3>
-            <p><strong>ViewModel + Compose</strong></p>
-            <small>Observes Flow, manages UI State (Loading/Success/Error)</small>
+        <div class="diagram-container">
+            <div class="node">
+                <strong>Presentation Layer</strong>
+                <small>ViewModel + Compose</small>
+            </div>
+            <div class="arrow">↓ Observes State</div>
+            <div class="node" style="border-color: var(--accent-gold);">
+                <strong>Domain Layer</strong>
+                <small>UseCase + Repo Interface</small>
+            </div>
+            <div class="arrow">↓ Defines Rules</div>
+            <div class="node" style="border-color: #4ade80;">
+                <strong>Data Layer</strong>
+                <small>Repo Impl + Retrofit</small>
+            </div>
         </div>
-        <div class="arrow">↓ Depends On</div>
-        <div class="layer domain">
-            <h3>Domain Layer</h3>
-            <p><strong>UseCase + Repository Interface</strong></p>
-            <small>Pure Kotlin. Contains Business Rules (e.g., Retry Policy for 503s)</small>
-        </div>
-        <div class="arrow">↓ Depends On</div>
-        <div class="layer data">
-            <h3>Data Layer</h3>
-            <p><strong>Repository Impl + Retrofit</strong></p>
-            <small>Handles API implementation, JSON parsing, and Bitmap decoding</small>
-        </div>
-    </div>
 
-    <h2 class="section-title">⚡ Key Engineering Decisions</h2>
+        <ol>
+            <li><strong>Presentation Layer:</strong> Observes <code>StateFlow&lt;ImageGenerationResult&gt;</code>. Handles UI states (Loading, Success, Error).</li>
+            <li><strong>Domain Layer:</strong> Pure Kotlin. Contains business rules, specifically the <strong>Retry Policy</strong> for handling HTTP 503 errors.</li>
+            <li><strong>Data Layer:</strong> Handles API implementation, JSON parsing, and raw Bitmap decoding.</li>
+        </ol>
+    </section>
 
-    <div class="feature-block">
+    <section>
+        <h2>🔐 Setup & Secrets (Crucial)</h2>
+        <p>This project uses a strict security practice to prevent committing API keys to version control. You <strong>must</strong> create a local secrets file to run the app.</p>
+
+        <h3>Step 1: Get a Hugging Face Token</h3>
+        <ol>
+            <li>Go to <a href="https://huggingface.co/settings/tokens" target="_blank">Hugging Face Settings > Tokens</a>.</li>
+            <li>Create a <strong>Read</strong> token.</li>
+        </ol>
+
+        <h3>Step 2: Create <code>secrets.properties</code></h3>
+        <ol>
+            <li>Navigate to the <strong>root</strong> of this project.</li>
+            <li>Create a file named <code>secrets.properties</code>.</li>
+            <li>Add your token inside:</li>
+        </ol>
+        <pre><code>HF_TOKEN=hf_your_actual_token_starts_with_hf_</code></pre>
+
+        <div class="alert">
+            <strong>Note:</strong> The <code>secrets.properties</code> file is already added to <code>.gitignore</code>. <strong>DO NOT</strong> commit this file.
+        </div>
+
+        <h3>Step 3: Sync Gradle</h3>
+        <p>The <code>build.gradle.kts</code> file automatically reads this property and injects it into <code>BuildConfig.HF_TOKEN</code> during compilation.</p>
+    </section>
+
+    <section>
+        <h2>⚡ Key Engineering Decisions</h2>
+
         <h3>1. The "Cold Start" Strategy (Retry Policy)</h3>
-        <p>Hugging Face's Free Tier spins down models when inactive. The first request often fails
-            with a <code>503 Service Unavailable</code>.</p>
-        <br>
-        <p><strong>The Solution:</strong> Instead of showing an error to the user, the <code>GenerateImageUseCase</code>
-            implements a smart retry mechanism using <code>retryWhen</code>.</p>
+        <p>Hugging Face's Free Tier (<code>hf-inference</code>) spins down models when inactive. The first request often fails with a <strong>503 Service Unavailable</strong>.</p>
+        <p><strong>The Solution:</strong> The <code>GenerateImageUseCase</code> implements a smart retry mechanism using <code>flow.retryWhen</code>:</p>
         <ul>
             <li>Intercepts 503 HTTP errors.</li>
-            <li>Applies exponential backoff (wait 1s, then 2s, then 4s).</li>
-            <li>Retries up to 3 times automatically before giving up.</li>
+            <li>Applies <strong>exponential backoff</strong> (wait 1s, then 2s, then 4s).</li>
+            <li>Retries up to 3 times automatically before propagating an error.</li>
         </ul>
-    </div>
 
-    <div class="feature-block">
         <h3>2. Strict State Management</h3>
-        <p>We avoid "null" checking hell by using a Sealed Interface for the result state.</p>
-        <br>
-        <pre><code style="display:block; padding: 1rem; background: #000;">sealed interface ImageGenerationResult {
+        <p>We avoid "null" checking hell by using a <strong>Sealed Interface</strong> for the result state.</p>
+        <pre><code>sealed interface ImageGenerationResult {
     data object Loading : ImageGenerationResult
     data class Success(val image: Bitmap) : ImageGenerationResult
     data class Error(val message: String) : ImageGenerationResult
 }</code></pre>
-    </div>
 
-    <div class="feature-block">
         <h3>3. Dynamic API Routing</h3>
-        <p>The networking layer is built to be provider-agnostic. By changing the Base URL and using
-            dynamic path replacement, the app can switch between:</p>
+        <p>The networking layer is built to be provider-agnostic via the <code>HuggingFaceApi</code> interface. It supports dynamic path replacement to switch between:</p>
         <ul>
-            <li><span class="badge badge-net">hf-inference</span> (Free, Shared GPU, Slower)</li>
-            <li><span class="badge badge-arch">fal-ai</span> (Paid, Dedicated, Instant)</li>
+            <li><strong>hf-inference:</strong> (Default) Free, Shared GPU, Slower.</li>
+            <li><strong>fal-ai:</strong> Paid, Dedicated, Instant (Requires paid account).</li>
         </ul>
-        <p style="margin-top: 0.5rem"><small>Currently configured for <strong>SDXL 1.0</strong> via
-            the internal router.</small></p>
-    </div>
+    </section>
 
     <footer>
-        <p>The Valhalla Suite</p>
+        <p><strong>Trinadh Thatakula</strong></p>
+        <p>
+            <a href="https://github.com/trinadhthatakula">GitHub</a> •
+            <a href="#">The Valhalla Suite</a>
+        </p>
+        <br>
+        <small>Generated for the Valhalla Demo.</small>
     </footer>
 </div>
 
