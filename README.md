@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="app/src/main/launcher-playstore.png" alt="Thor Logo" height="192dp">
+</p>
+
 # AI Image Gen: Hugging Face Android Inference
 
 ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
