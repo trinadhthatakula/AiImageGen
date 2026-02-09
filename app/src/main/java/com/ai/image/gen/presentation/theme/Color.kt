@@ -1,4 +1,4 @@
-package com.ai.image.gen.ui.theme
+package com.ai.image.gen.presentation.theme
 
 import androidx.compose.ui.graphics.Color
 

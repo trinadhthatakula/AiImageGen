@@ -1,21 +1,25 @@
 package com.ai.image.gen.data
 
 import android.graphics.BitmapFactory
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.ai.image.gen.domain.ImageGenerationResult
 import com.ai.image.gen.domain.ImageRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import java.io.IOException
-
 import com.ai.image.gen.BuildConfig
+import com.ai.image.gen.data.worker.ImageEditWorker
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class ImageRepositoryImpl(
-    private val api: HuggingFaceApi
+    private val api: HuggingFaceApi,
+    private val workManager: WorkManager
 ) : ImageRepository {
 
     override fun generateImage(prompt: String): Flow<ImageGenerationResult> = flow {
@@ -61,4 +65,18 @@ class ImageRepositoryImpl(
             emit(ImageGenerationResult.Error(errorMessage, e))
         }
     }.flowOn(Dispatchers.IO) // ALWAYS ensure this runs on IO thread
+
+    override fun scheduleImageEdit(prompt: String, imageUri: String) {
+        val inputData = workDataOf(
+            ImageEditWorker.KEY_PROMPT to prompt,
+            ImageEditWorker.KEY_IMAGE_URI to imageUri
+        )
+
+        val editWorkRequest = OneTimeWorkRequestBuilder<ImageEditWorker>()
+            .setInputData(inputData)
+            // Optional: Add constraints (e.g., Network Required)
+            .build()
+
+        workManager.enqueue(editWorkRequest)
+    }
 }

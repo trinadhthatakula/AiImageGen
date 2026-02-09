@@ -1,17 +1,25 @@
 package com.ai.image.gen.di
 
+import androidx.work.WorkManager
 import com.ai.image.gen.BuildConfig
 import com.ai.image.gen.data.HuggingFaceApi
 import com.ai.image.gen.data.ImageRepositoryImpl
+import com.ai.image.gen.data.SavedImagesRepositoryImpl
+import com.ai.image.gen.data.worker.ImageEditWorker
 import com.ai.image.gen.domain.GenerateImageUseCase
 import com.ai.image.gen.domain.ImageRepository
-import com.ai.image.gen.presentation.ImageViewModel
+import com.ai.image.gen.domain.SavedImagesRepository
+import com.ai.image.gen.presentation.i2i.ImageEditViewModel
+import com.ai.image.gen.presentation.saved.SavedImagesViewModel
+import com.ai.image.gen.presentation.t2i.ImageViewModel
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.koin.android.ext.koin.androidContext
+import org.koin.androidx.workmanager.dsl.workerOf
 import org.koin.core.module.dsl.bind
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -47,13 +55,21 @@ val appModule = module {
         get<Retrofit>().create(HuggingFaceApi::class.java)
     }
 
+    single { WorkManager.getInstance(androidContext()) }
+
+
     // 2. Repository (Singleton)
     // using singleOf(::Impl) { bind<Interface>() } for strict typing
     singleOf(::ImageRepositoryImpl) { bind<ImageRepository>() }
+    singleOf(::SavedImagesRepositoryImpl) { bind<SavedImagesRepository>() }
 
     // 3. Use Case (Factory - created every time it's injected, usually lightweight)
     factoryOf(::GenerateImageUseCase)
 
+    workerOf(::ImageEditWorker)
+
     // 4. ViewModel
-    viewModel { ImageViewModel(get()) }
+    viewModelOf(::ImageViewModel)
+    viewModelOf(::ImageEditViewModel)
+    viewModelOf(::SavedImagesViewModel)
 }

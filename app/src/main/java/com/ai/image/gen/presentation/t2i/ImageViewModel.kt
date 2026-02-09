@@ -1,4 +1,4 @@
-package com.ai.image.gen.presentation
+package com.ai.image.gen.presentation.t2i
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

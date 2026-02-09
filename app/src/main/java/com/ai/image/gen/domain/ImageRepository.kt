@@ -8,4 +8,7 @@ interface ImageRepository {
      * Returns a Flow to emit Loading -> Success/Error states over time.
      */
     fun generateImage(prompt: String): Flow<ImageGenerationResult>
+
+    fun scheduleImageEdit(prompt: String, imageUri: String)
+
 }

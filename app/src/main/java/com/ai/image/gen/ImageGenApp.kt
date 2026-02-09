@@ -4,6 +4,7 @@ import android.app.Application
 import com.ai.image.gen.di.appModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
+import org.koin.androidx.workmanager.koin.workManagerFactory
 import org.koin.core.context.startKoin
 import org.koin.core.logger.Level
 
@@ -16,6 +17,7 @@ class ImageGenApp  : Application() {
             androidLogger(Level.ERROR)
             // Reference Android context
             androidContext(this@ImageGenApp)
+            workManagerFactory()
             // Load modules
             modules(appModule)
         }
