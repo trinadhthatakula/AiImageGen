@@ -28,13 +28,37 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        val hfToken = secretsProperties.getProperty("HF_TOKEN") ?: ""
-        buildConfigField("String", "HF_TOKEN", "\"$hfToken\"")
+        val token = secretsProperties.getProperty("HF_TOKEN")
+        if (token.isNullOrEmpty()) {
+            logger.error(
+                "\n" +
+                        "\u001B[31m============================================================================\u001B[0m\n" +
+                        "\u001B[31m🛑 SECURITY ALERT: HF_TOKEN MISSING 🛑\u001B[0m\n" +
+                        "\u001B[31m----------------------------------------------------------------------------\u001B[0m\n" +
+                        "The app will compile, but Image Generation features will CRASH at runtime.\n" +
+                        "Please create 'secrets.properties' in the project root with:\n" +
+                        "HF_TOKEN=hf_your_token_here\n\n" +
+                        "👉 Get your FREE token here: https://huggingface.co/settings/tokens\n" +
+                        "\u001B[31m============================================================================\u001B[0m\n"
+            )
+            buildConfigField("String", "HF_TOKEN", "\"\"")
+        } else {
+            logger.lifecycle(
+                "\n" +
+                        "\u001B[32m============================================================================\u001B[0m\n" +
+                        "\u001B[32m✅ SECURITY: HF_TOKEN FOUND\u001B[0m\n" +
+                        "\u001B[32m----------------------------------------------------------------------------\u001B[0m\n" +
+                        "Token injection successful. The Forge is ready.\n" +
+                        "\u001B[32m============================================================================\u001B[0m\n"
+            )
+            buildConfigField("String", "HF_TOKEN", "\"$token\"")
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
